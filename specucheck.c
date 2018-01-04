@@ -64,6 +64,9 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
 //
 // Welcome Banner
 //
+const WCHAR WelcomeString[] = L"\x1b[0mSpecuCheck v1.0.3   --   Copyright(c) 2018 Alex Ionescu\n"
+                              L"\x1b[0mhttps://ionescu007.github.io/SpecuCheck/  --  @aionescu\n"
+                              L"\x1b[0m-------------------------------------------------------\n\n";
 
 //
 // Error String
@@ -213,6 +216,7 @@ SpcMain (
                             L"\x1b[0m[-] CPU Supports Speculation Control MSR:           %s\n"
                             L"\x1b[0m └───> IBRS  Speculation Control MSR Enabled:       %s\n"
                             L"\x1b[0m[-] CPU Supports Speculation Command MSR:           %s\n"
+                            L"\x1b[0m └───> STIBP Speculation Command MSR Enabled:       %s\n\x1b[0m",
                             specInfo.SpeculationControlFlags.BpbEnabled ? "\x1b[1;32myes" : "\x1b[1;31m no",
                             specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ? "\x1b[1;31myes" : "\x1b[1;32m no",
                             specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ? "\x1b[1;31myes" : "\x1b[1;32m no",
