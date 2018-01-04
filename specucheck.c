@@ -23,6 +23,8 @@ Environment:
 //
 // OS Headers
 //
+#include <ntstatus.h>
+#define WIN32_NO_STATUS
 #include <windows.h>
 #include <winternl.h>
 
@@ -62,7 +64,7 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
 //
 // Welcome Banner
 //
-const WCHAR WelcomeString[] = L"SpecuCheck v1.0.0 -- Copyright (c) 2018 Alex Ionescu\n"
+const WCHAR WelcomeString[] = L"SpecuCheck v1.0.2 -- Copyright (c) 2018 Alex Ionescu\n"
                               L"http://www.alex-ionescu.com - @aionescu\n"
                               L"----------------------------------------------------\n\n";
 
@@ -81,6 +83,7 @@ typedef enum _SPC_ERROR_CODES
     SpcFailedToOpenStandardOut = -2,
     SpcFailedToQueryKvaShadowing = -3,
     SpcFailedToQuerySpeculationControl = -4,
+    SpcUnknownInfoClassFailure = -5,
 } SPC_ERROR_CODES;
 
 INT
@@ -126,7 +129,7 @@ SpcMain (
                                       &kvaInfo,
                                       sizeof(kvaInfo),
                                       NULL);
-    if (!NT_SUCCESS(status))
+    if (status == STATUS_INVALID_INFO_CLASS)
     {
         //
         // Print out an error if this failed
@@ -139,6 +142,35 @@ SpcMain (
         errorCode = SpcFailedToQueryKvaShadowing;
         goto Exit;
     }
+    if (status == STATUS_NOT_IMPLEMENTED)
+    {
+        //
+        // x86 Systems without the mitigation active
+        //
+        RtlZeroMemory(&kvaInfo, sizeof(kvaInfo));
+    }
+    else if (!NT_SUCCESS(status))
+    {
+        errorCode = SpcUnknownInfoClassFailure;
+        goto Exit;
+    }
+
+    //
+    // Print status of KVA Features
+    //
+    charsWritten = swprintf(stateBuffer,
+                            ARRAYSIZE(stateBuffer),
+                            L"Mitigations for CVE-2017-5754 [rogue data cache load]\n"
+                            L"-----------------------------------------------------\n"
+                            L"Kernel VA Shadowing Enabled: %s\n"
+                            L"Kernel VA Shadowing with User Pages Marked Global: %s\n"
+                            L"Kernel VA Shadowing with PCID Support: %s\n"
+                            L"Kernel VA Shadowing with INVPCID Support: %s\n\n",
+                            kvaInfo.KvaShadowFlags.KvaShadowEnabled ? "yes" : "no",
+                            kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ? "yes" : "no",
+                            kvaInfo.KvaShadowFlags.KvaShadowPcid ? "yes" : "no",
+                            kvaInfo.KvaShadowFlags.KvaShadowInvpcid ? "yes" : "no");
+    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
     //
     // Get the Speculation Control Information
@@ -147,7 +179,7 @@ SpcMain (
                                       &specInfo,
                                       sizeof(specInfo),
                                       NULL);
-    if (!NT_SUCCESS(status))
+    if (status == STATUS_INVALID_INFO_CLASS)
     {
         //
         // Print out an error if this failed
@@ -160,43 +192,35 @@ SpcMain (
         errorCode = SpcFailedToQuerySpeculationControl;
         goto Exit;
     }
-
-    //
-    // Print status of KVA Features
-    //
-    charsWritten = swprintf_s(stateBuffer,
-                              ARRAYSIZE(stateBuffer),
-                              L"KVA Shadowing Enabled: %s\n"
-                              L"KVA Shadowing with User Pages Marked Global: %s\n"
-                              L"KVA Shadowing with PCID Support: %s\n"
-                              L"KVA Shadowing with INVPCID Support: %s\n\n",
-                              kvaInfo.KvaShadowFlags.KvaShadowEnabled ? L"yes" : L"no",
-                              kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ? L"yes" : L"no",
-                              kvaInfo.KvaShadowFlags.KvaShadowPcid ? L"yes" : L"no",
-                              kvaInfo.KvaShadowFlags.KvaShadowInvpcid ? L"yes" : L"no");
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+    else if (!NT_SUCCESS(status))
+    {
+        errorCode = SpcUnknownInfoClassFailure;
+        goto Exit;
+    }
 
     //
     // Print status of Speculation Control Features
     //
-    charsWritten = swprintf_s(stateBuffer,
-                              ARRAYSIZE(stateBuffer),
-                              L"BPB Enabled: %s\n"
-                              L"BPB Disabled due to System Policy: %s\n"
-                              L"BPB Disabled due to No Hardware Support: %s\n"
-                              L"Speculation Controls Enumerated: %s\n"
-                              L"Speculation Commands Enumerated: %s\n"
-                              L"IBRS Speculation Control Present: %s\n"
-                              L"STIBP Speculation Control Present: %s\n"
-                              L"Supervisor Mode Execution Prevention Present: %s\n",
-                              specInfo.SpeculationControlFlags.BpbEnabled ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.SpecCtrlEnumerated ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.SpecCmdEnumerated ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.IbrsPresent ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.StibpPresent ? L"yes" : L"no",
-                              specInfo.SpeculationControlFlags.SmepPresent ? L"yes" : L"no");
+    charsWritten = swprintf(stateBuffer,
+                            ARRAYSIZE(stateBuffer),
+                            L"Mitigations for CVE-2017-5715 [branch target injection]\n"
+                            L"-------------------------------------------------------\n"
+                            L"Branch Prediction Mitigations Enabled: %s\n"
+                            L"Branch Prediction Mitigations Disabled due to System Policy: %s\n"
+                            L"Branch Prediction Mitigations Disabled due to No Hardware Support: %s\n"
+                            L"CPU Supports Speculation Controls: %s\n"
+                            L"CPU Supports Speculation Commands: %s\n"
+                            L"IBRS Speculation Control Present: %s\n"
+                            L"STIBP Speculation Command Present: %s\n"
+                            L"Supervisor Mode Execution Prevention Present: %s\n",
+                            specInfo.SpeculationControlFlags.BpbEnabled ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.SpecCtrlEnumerated ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.IbrsPresent ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.StibpPresent ? "yes" : "no",
+                            specInfo.SpeculationControlFlags.SmepPresent ? "yes" : "no");
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
     //
