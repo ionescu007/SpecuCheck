@@ -4,7 +4,7 @@ SpecuCheck is a Windows utility for checking the state of the software mitigatio
 
 ## Screenshots
 
-![Screenshot](specucheck.png)
+![Screenshot](SpecuCheck.png)
 
 ## Introduction
 
