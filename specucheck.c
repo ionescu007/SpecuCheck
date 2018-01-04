@@ -62,17 +62,49 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
 } SYSTEM_KERNEL_VA_SHADOW_INFORMATION, *PSYSTEM_KERNEL_VA_SHADOW_INFORMATION;
 
 //
+// ANSI Check
+//
+BOOL g_SupportsAnsi;
+
+//
 // Welcome Banner
 //
-const WCHAR WelcomeString[] = L"\x1b[0mSpecuCheck v1.0.3   --   Copyright(c) 2018 Alex Ionescu\n"
-                              L"\x1b[0mhttps://ionescu007.github.io/SpecuCheck/  --  @aionescu\n"
-                              L"\x1b[0m-------------------------------------------------------\n\n";
+const WCHAR WelcomeString[] =
+    L"SpecuCheck v1.0.3   --   Copyright(c) 2018 Alex Ionescu\n"
+    L"https://ionescu007.github.io/SpecuCheck/  --  @aionescu\n"
+    L"-------------------------------------------------------\n\n";
 
 //
 // Error String
 //
-const WCHAR UnpatchedString[] = L"Your system either does not have the appropriate patch, "
-                                L"or it may not support the information class required.\n";
+const WCHAR UnpatchedString[] =
+    L"Your system either does not have the appropriate patch, "
+    L"or it may not support the information class required.\n";
+
+//
+// KVA Status String
+//
+const WCHAR g_KvaStatusString[] =
+    L"%sMitigations for %sCVE-2017-5754 [rogue data cache load]%s\n"
+    L"-------------------------------------------------------\n"
+    L"[-] Kernel VA Shadowing Enabled:                    %s%s\n"
+    L" ├───> with User Pages Marked Global:               %s%s\n"
+    L" ├───> with PCID Support:                           %s%s\n"
+    L" └───> with INVPCID Support:                        %s%s\n\n";
+
+//
+// Speculation Control Status String
+//
+const WCHAR g_SpecControlStatusString[] =
+    L"%sMitigations for %sCVE-2017-5715 [branch target injection]%s\n"
+    L"-------------------------------------------------------\n"
+    L"[-] Branch Prediction Mitigations Enabled:          %s%s\n"
+    L" ├───> Disabled due to System Policy:               %s%s\n"
+    L" └───> Disabled due to No Hardware Support:         %s%s\n"
+    L"[-] CPU Supports Speculation Control MSR:           %s%s\n"
+    L" └───> IBRS  Speculation Control MSR Enabled:       %s%s\n"
+    L"[-] CPU Supports Speculation Command MSR:           %s%s\n"
+    L" └───> STIBP Speculation Command MSR Enabled:       %s%s\n";
 
 //
 // Error codes used for clarity
@@ -85,6 +117,60 @@ typedef enum _SPC_ERROR_CODES
     SpcFailedToQuerySpeculationControl = -4,
     SpcUnknownInfoClassFailure = -5,
 } SPC_ERROR_CODES;
+
+PCHAR
+FORCEINLINE
+GetResetString (
+    VOID
+    )
+{
+    return g_SupportsAnsi ? "\x1b[0m" : "";
+}
+
+PCHAR
+FORCEINLINE
+GetRedNoString (
+    VOID
+)
+{
+    return g_SupportsAnsi ? "\x1b[1;31m no" : " no";
+}
+
+PCHAR
+FORCEINLINE
+GetGreenYesString (
+    VOID
+    )
+{
+    return g_SupportsAnsi ? "\x1b[1;32myes" : "yes";
+}
+
+PCHAR
+FORCEINLINE
+GetRedYesString (
+    VOID
+)
+{
+    return g_SupportsAnsi ? "\x1b[1;31myes" : "yes";
+}
+
+PCHAR
+FORCEINLINE
+GetGreenNoString (
+    VOID
+)
+{
+    return g_SupportsAnsi ? "\x1b[1;32m no" : " no";
+}
+
+PCHAR
+FORCEINLINE
+GetCyanString (
+    VOID
+    )
+{
+    return g_SupportsAnsi ? "\x1b[1;36m" : "";
+}
 
 INT
 SpcMain (
@@ -120,7 +206,9 @@ SpcMain (
     //
     // Enable ANSI on Windows 10 if supported
     //
-    SetConsoleMode(hStdOut, ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    g_SupportsAnsi = SetConsoleMode(hStdOut,
+                                    ENABLE_PROCESSED_OUTPUT |
+                                    ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
     //
     // We now have display capabilities -- say hello!
@@ -165,16 +253,22 @@ SpcMain (
     //
     charsWritten = swprintf(stateBuffer,
                             ARRAYSIZE(stateBuffer),
-                            L"\x1b[0mMitigations for \x1b[1;36mCVE-2017-5754 [rogue data cache load]\n"
-                            L"\x1b[0m-------------------------------------------------------\n"
-                            L"\x1b[0m[-] Kernel VA Shadowing Enabled:                    %s\n"
-                            L"\x1b[0m ├───> with User Pages Marked Global:               %s\n"
-                            L"\x1b[0m ├───> with PCID Support:                           %s\n"
-                            L"\x1b[0m └───> with INVPCID Support:                        %s\n\n",
-                            kvaInfo.KvaShadowFlags.KvaShadowEnabled ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            kvaInfo.KvaShadowFlags.KvaShadowPcid ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            kvaInfo.KvaShadowFlags.KvaShadowInvpcid ? "\x1b[1;32myes" : "\x1b[1;31m no");
+                            g_KvaStatusString,
+                            GetResetString(),
+                            GetCyanString(),
+                            GetResetString(),
+                            kvaInfo.KvaShadowFlags.KvaShadowEnabled ?
+                               GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            kvaInfo.KvaShadowFlags.KvaShadowPcid ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            kvaInfo.KvaShadowFlags.KvaShadowInvpcid ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString());
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
     //
@@ -208,22 +302,31 @@ SpcMain (
     //
     charsWritten = swprintf(stateBuffer,
                             ARRAYSIZE(stateBuffer),
-                            L"\x1b[0mMitigations for \x1b[1;36mCVE-2017-5715 [branch target injection]\n"
-                            L"\x1b[0m-------------------------------------------------------\n"
-                            L"\x1b[0m[-] Branch Prediction Mitigations Enabled:          %s\n"
-                            L"\x1b[0m ├───> Disabled due to System Policy:               %s\n"
-                            L"\x1b[0m └───> Disabled due to No Hardware Support:         %s\n"
-                            L"\x1b[0m[-] CPU Supports Speculation Control MSR:           %s\n"
-                            L"\x1b[0m └───> IBRS  Speculation Control MSR Enabled:       %s\n"
-                            L"\x1b[0m[-] CPU Supports Speculation Command MSR:           %s\n"
-                            L"\x1b[0m └───> STIBP Speculation Command MSR Enabled:       %s\n\x1b[0m",
-                            specInfo.SpeculationControlFlags.BpbEnabled ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ? "\x1b[1;31myes" : "\x1b[1;32m no",
-                            specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ? "\x1b[1;31myes" : "\x1b[1;32m no",
-                            specInfo.SpeculationControlFlags.SpecCtrlEnumerated ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            specInfo.SpeculationControlFlags.IbrsPresent ? "\x1b[1;32myes" : "\x1b[1;31m no",
-                            specInfo.SpeculationControlFlags.StibpPresent ? "\x1b[1;32myes" : "\x1b[1;31m no");
+                            g_SpecControlStatusString,
+                            GetResetString(),
+                            GetCyanString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.BpbEnabled ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ?
+                                GetRedYesString() : GetGreenNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ?
+                                GetRedYesString() : GetGreenNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.SpecCtrlEnumerated ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.IbrsPresent ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.StibpPresent ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString());
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
     //
