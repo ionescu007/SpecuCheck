@@ -32,11 +32,11 @@ Which will result in an informational screen indicating which features/mitigatio
 
 ## References
 
-If you would like to know more about my research or work, I invite you check out my blog at http://www.alex-ionescu.com as well as my training & consulting company, Winsider Seminars & Solutions Inc., at http://www.windows-internals.com.
+If you would like to know more about my research or work, I invite you check out my blog at [[http://www.alex-ionescu.com]] as well as my training & consulting company, Winsider Seminars & Solutions Inc., at [[http://www.windows-internals.com]].
 
-https://googleprojectzero.blogspot.com/2018/01/reading-privileged-memory-with-side.html
+[[https://googleprojectzero.blogspot.com/2018/01/reading-privileged-memory-with-side.html]]
 
-https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV180002
+[[https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV180002]]
 
 [2]:https://googleprojectzero.blogspot.com/2018/01/reading-privileged-memory-with-side.html
 [1]:https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV180002
