@@ -1,4 +1,4 @@
-/*++
+﻿/*++
 
 Copyright (c) Alex Ionescu.  All rights reserved.
 
@@ -64,9 +64,6 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
 //
 // Welcome Banner
 //
-const WCHAR WelcomeString[] = L"SpecuCheck v1.0.2 -- Copyright (c) 2018 Alex Ionescu\n"
-                              L"http://www.alex-ionescu.com - @aionescu\n"
-                              L"----------------------------------------------------\n\n";
 
 //
 // Error String
@@ -97,7 +94,7 @@ SpcMain (
     SYSTEM_KERNEL_VA_SHADOW_INFORMATION kvaInfo;
     SYSTEM_SPECULATION_CONTROL_INFORMATION specInfo;
     SPC_ERROR_CODES errorCode;
-    WCHAR stateBuffer[512];
+    WCHAR stateBuffer[1024];
     INT charsWritten;
 
     //
@@ -116,6 +113,11 @@ SpcMain (
         errorCode = SpcFailedToOpenStandardOut;
         goto Exit;
     }
+
+    //
+    // Enable ANSI on Windows 10 if supported
+    //
+    SetConsoleMode(hStdOut, ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
     //
     // We now have display capabilities -- say hello!
@@ -160,16 +162,16 @@ SpcMain (
     //
     charsWritten = swprintf(stateBuffer,
                             ARRAYSIZE(stateBuffer),
-                            L"Mitigations for CVE-2017-5754 [rogue data cache load]\n"
-                            L"-----------------------------------------------------\n"
-                            L"Kernel VA Shadowing Enabled: %s\n"
-                            L"Kernel VA Shadowing with User Pages Marked Global: %s\n"
-                            L"Kernel VA Shadowing with PCID Support: %s\n"
-                            L"Kernel VA Shadowing with INVPCID Support: %s\n\n",
-                            kvaInfo.KvaShadowFlags.KvaShadowEnabled ? "yes" : "no",
-                            kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ? "yes" : "no",
-                            kvaInfo.KvaShadowFlags.KvaShadowPcid ? "yes" : "no",
-                            kvaInfo.KvaShadowFlags.KvaShadowInvpcid ? "yes" : "no");
+                            L"\x1b[0mMitigations for \x1b[1;36mCVE-2017-5754 [rogue data cache load]\n"
+                            L"\x1b[0m-------------------------------------------------------\n"
+                            L"\x1b[0m[-] Kernel VA Shadowing Enabled:                    %s\n"
+                            L"\x1b[0m ├───> with User Pages Marked Global:               %s\n"
+                            L"\x1b[0m ├───> with PCID Support:                           %s\n"
+                            L"\x1b[0m └───> with INVPCID Support:                        %s\n\n",
+                            kvaInfo.KvaShadowFlags.KvaShadowEnabled ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            kvaInfo.KvaShadowFlags.KvaShadowPcid ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            kvaInfo.KvaShadowFlags.KvaShadowInvpcid ? "\x1b[1;32myes" : "\x1b[1;31m no");
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
     //
@@ -203,24 +205,21 @@ SpcMain (
     //
     charsWritten = swprintf(stateBuffer,
                             ARRAYSIZE(stateBuffer),
-                            L"Mitigations for CVE-2017-5715 [branch target injection]\n"
-                            L"-------------------------------------------------------\n"
-                            L"Branch Prediction Mitigations Enabled: %s\n"
-                            L"Branch Prediction Mitigations Disabled due to System Policy: %s\n"
-                            L"Branch Prediction Mitigations Disabled due to No Hardware Support: %s\n"
-                            L"CPU Supports Speculation Controls: %s\n"
-                            L"CPU Supports Speculation Commands: %s\n"
-                            L"IBRS Speculation Control Present: %s\n"
-                            L"STIBP Speculation Command Present: %s\n"
-                            L"Supervisor Mode Execution Prevention Present: %s\n",
-                            specInfo.SpeculationControlFlags.BpbEnabled ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.SpecCtrlEnumerated ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.IbrsPresent ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.StibpPresent ? "yes" : "no",
-                            specInfo.SpeculationControlFlags.SmepPresent ? "yes" : "no");
+                            L"\x1b[0mMitigations for \x1b[1;36mCVE-2017-5715 [branch target injection]\n"
+                            L"\x1b[0m-------------------------------------------------------\n"
+                            L"\x1b[0m[-] Branch Prediction Mitigations Enabled:          %s\n"
+                            L"\x1b[0m ├───> Disabled due to System Policy:               %s\n"
+                            L"\x1b[0m └───> Disabled due to No Hardware Support:         %s\n"
+                            L"\x1b[0m[-] CPU Supports Speculation Control MSR:           %s\n"
+                            L"\x1b[0m └───> IBRS  Speculation Control MSR Enabled:       %s\n"
+                            L"\x1b[0m[-] CPU Supports Speculation Command MSR:           %s\n"
+                            specInfo.SpeculationControlFlags.BpbEnabled ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            specInfo.SpeculationControlFlags.BpbDisabledSystemPolicy ? "\x1b[1;31myes" : "\x1b[1;32m no",
+                            specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ? "\x1b[1;31myes" : "\x1b[1;32m no",
+                            specInfo.SpeculationControlFlags.SpecCtrlEnumerated ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            specInfo.SpeculationControlFlags.IbrsPresent ? "\x1b[1;32myes" : "\x1b[1;31m no",
+                            specInfo.SpeculationControlFlags.StibpPresent ? "\x1b[1;32myes" : "\x1b[1;31m no");
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
     //
