@@ -28,11 +28,15 @@ Since then, Microsoft has done great work to expose that data from the kernel-mo
 
 ## Installation on Windows
 
-SpecuCheck is currently x64 only and has only been tested on Windows 10. Future released versions will support Windows 7 and x86 systems as well. To run SpecuCheck, simply execute it on the command-line:
+To run SpecuCheck, simply execute it on the command-line:
 
 `c:\SpecuCheck.exe`
 
-Which will result in an informational screen indicating which features/mitigations are enabled.
+Which will result in an informational screen indicating which features/mitigations are enabled. If you see the text:
+
+`Your system either does not have the appropriate patch, or it may not support the information class required`
+
+This indicates that your system is not currently patched to mitigate against these vulnerabilities.
 
 ## References
 
