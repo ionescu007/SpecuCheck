@@ -1,6 +1,8 @@
 # SpecuCheck
 
-SpecuCheck is a Windows utility for checking the state of the software mitigations against CVE-2017-5754 (Meltdown) and hardware mitigations against CVE-2017-5715 (Spectre). It uses two new information classes that were added to the NtQuerySystemInformation API call as part of the recent patches introduced in January 2018 and reports the data as seen by the Windows Kernel.
+SpecuCheck is a Windows utility for checking the state of the software mitigations against CVE-2017-5754 (Meltdown) and hardware mitigations against CVE-2017-5715 (Spectre). It uses two new information classes that were added to the NtQuerySystemInformation API call as part of the recent patches introduced in January 2018 and reports the data as seen by the Windows Kernel. 
+
+An [official](https://support.microsoft.com/en-us/help/4073119/windows-client-guidance-for-it-pros-to-protect-against-speculative-exe) Microsoft Powershell Cmdlet Module now exists as well, which is the recommended and supported way to get this information.
 
 ## Screenshots
 
@@ -20,7 +22,9 @@ SpecuCheck takes advantage of this system call in order to confirm if a system h
 
 ## Motivation
 
-There is a lot of noise, hype, and marketing around thie issue, and not a lot of documentation on how to see if you're affected, and at what performance overhead. Microsoft has done great work to expose that data from the kernel-mode in a concise matter, which succintly indicates the kernel's support and usage of the various mitigating technologies and hardware features. SpecuCheck aims to make that data easily accessible by users and IT departments, to avoid having to use a Windows debugger or reverse engineer the API themselves.
+There was originally a lot of noise, hype, and marketing around thie issue, and not a lot of documentation on how to see if you were affected, and at what performance overhead. SpecuCheck aimed to make that data easily accessible by users and IT departments, to avoid having to use a Windows debugger or reverse engineer the API themselves.
+
+Since then, Microsoft has done great work to expose that data from the kernel-mode in a concise matter, which succintly indicates the kernel's support and usage of the various mitigating technologies and hardware features, and released a PowerShell CmdLet Module to retrieve that data. SpecuCheck therefore remains only as a research tool and is not recommended -- please use the Microsoft-approved PowerShell Module instead.
 
 ## Installation on Windows
 
@@ -41,6 +45,8 @@ Finally, for additional information on the appropriate and required Windows patc
 ## Caveats
 
 SpecuCheck relies on undocumented system calls and information classes which are subject to change. Additionally, SpecuCheck only returns the information that the Windows Kernel is storing about the state of the mitigations and hardware features -- based on policy settings (registry, boot parameters) or other compatibility flags, the Windows Kernel's state may not match the true hardware state. The goal of this tool is to give you a Windows-specific assessment, not a hardware assessment that is OS-agnostic.
+
+SpecuCheck is only a research tool and is not recommended for general use -- please use the Microsoft-approved PowerShell Module instead.
 
 ## License
 
