@@ -48,6 +48,11 @@ SpecuCheck relies on undocumented system calls and information classes which are
 
 SpecuCheck is only a research tool and is not recommended for general use -- please use the Microsoft-approved PowerShell Module instead.
 
+## Compiling/Implementations
+
+SpecuCheck needs some important driversn in form of the Windows Driver Kit (WDK) which you can find [here](https://developer.microsoft.com/en-us/windows/hardware/windows-driver-kit).
+In case of an error occuring while compiling triggered by an not existing .dll, which is referenced in WDK libs, please add them to main source folder. 
+
 ## License
 
 ```
