@@ -89,8 +89,7 @@ const WCHAR g_KvaStatusString[] =
     L"-------------------------------------------------------\n"
     L"[-] Kernel VA Shadowing Enabled:                    %s%s\n"
     L" ├───> with User Pages Marked Global:               %s%s\n"
-    L" ├───> with PCID Support:                           %s%s\n"
-    L" └───> with INVPCID Support:                        %s%s\n\n";
+    L" └───> with PCID Flushing Optimization (INVPCID):   %s%s\n\n";
 
 //
 // Speculation Control Status String
@@ -99,12 +98,13 @@ const WCHAR g_SpecControlStatusString[] =
     L"%sMitigations for %sCVE-2017-5715 [branch target injection]%s\n"
     L"-------------------------------------------------------\n"
     L"[-] Branch Prediction Mitigations Enabled:          %s%s\n"
-    L" ├───> Disabled due to System Policy:               %s%s\n"
-    L" └───> Disabled due to No Hardware Support:         %s%s\n"
-    L"[-] CPU Supports Speculation Control MSR:           %s%s\n"
-    L" └───> IBRS  Speculation Control MSR Enabled:       %s%s\n"
-    L"[-] CPU Supports Speculation Command MSR:           %s%s\n"
-    L" └───> STIBP Speculation Command MSR Enabled:       %s%s\n";
+    L" ├───> Disabled due to System Policy (Registry):    %s%s\n"
+    L" └───> Disabled due to Lack of Microcode Update:    %s%s\n"
+    L"[-] CPU Microcode Supports SPEC_CTRL MSR (048h):    %s%s\n"
+    L" └───> Windows will use IBRS (01h):                 %s%s\n"
+    L" └───> Windows will use STIPB (02h):                %s%s\n"
+    L"[-] CPU Microcode Supports PRED_CMD MSR (049h):     %s%s\n"
+    L" └───> Windows will use IBPB (01h):                 %s%s\n";
 
 //
 // Error codes used for clarity
@@ -316,9 +316,6 @@ SpcMain (
                                 GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
                             specInfo.SpeculationControlFlags.SpecCtrlEnumerated ?
-                                GetGreenYesString() : GetRedNoString(),
-                            GetResetString(),
-                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString(),
                             specInfo.SpeculationControlFlags.IbrsPresent ?
