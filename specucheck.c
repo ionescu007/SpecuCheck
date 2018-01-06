@@ -70,7 +70,7 @@ BOOL g_SupportsAnsi;
 // Welcome Banner
 //
 const WCHAR WelcomeString[] =
-    L"SpecuCheck v1.0.3   --   Copyright(c) 2018 Alex Ionescu\n"
+    L"SpecuCheck v1.0.4   --   Copyright(c) 2018 Alex Ionescu\n"
     L"https://ionescu007.github.io/SpecuCheck/  --  @aionescu\n"
     L"-------------------------------------------------------\n\n";
 
