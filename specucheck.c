@@ -323,6 +323,12 @@ SpcMain (
                             GetResetString(),
                             specInfo.SpeculationControlFlags.StibpPresent ?
                                 GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ?
+                                GetGreenYesString() : GetRedNoString(),
+                            GetResetString(),
+                            specInfo.SpeculationControlFlags.SpecCmdEnumerated ?
+                                GetGreenYesString() : GetRedNoString(),
                             GetResetString());
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
