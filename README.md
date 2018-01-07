@@ -22,9 +22,9 @@ SpecuCheck takes advantage of this system call in order to confirm if a system h
 
 ## Motivation
 
-There was originally a lot of noise, hype, and marketing around thie issue, and not a lot of documentation on how to see if you were affected, and at what performance overhead. SpecuCheck aimed to make that data easily accessible by users and IT departments, to avoid having to use a Windows debugger or reverse engineer the API themselves.
+There was originally a lot of noise, hype, and marketing around the issue, and not a lot of documentation on how to see if you were affected, and at what performance overhead. SpecuCheck aimed to make that data easily accessible by users and IT departments, to avoid having to use a Windows debugger or reverse engineer the API themselves.
 
-Since then, Microsoft has done great work to expose that data from the kernel-mode in a concise matter, which succintly indicates the kernel's support and usage of the various mitigating technologies and hardware features, and released a PowerShell CmdLet Module to retrieve that data. SpecuCheck therefore remains only as a research tool and is not recommended -- please use the Microsoft-approved PowerShell Module instead.
+Since then, Microsoft has done great work to expose that data from the kernel-mode in a concise matter, which succinctly indicates the kernel's support and usage of the various mitigating technologies and hardware features, and released a PowerShell CmdLet Module to retrieve that data. SpecuCheck, therefore, remains only as a research tool and is not recommended -- please use the Microsoft-approved PowerShell Module instead.
 
 ## Installation on Windows
 
@@ -40,7 +40,7 @@ This indicates that your system is not currently patched to mitigate against the
 
 ## References
 
-If you would like to know more about my research or work, I invite you check out my blog at [http://www.alex-ionescu.com](http://www.alex-ionescu.com) as well as my training & consulting company, Winsider Seminars & Solutions Inc., at [http://www.windows-internals.com](http://www.windows-internals.com).
+If you would like to know more about my research or work, I invite you to check out my blog at [http://www.alex-ionescu.com](http://www.alex-ionescu.com) as well as my training & consulting company, Winsider Seminars & Solutions Inc., at [http://www.windows-internals.com](http://www.windows-internals.com).
 
 You should also definitely read the incredibly informative [Project Zero Post](https://googleprojectzero.blogspot.com/2018/01/reading-privileged-memory-with-side.html).
 
