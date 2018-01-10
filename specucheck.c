@@ -137,7 +137,7 @@ GetRedNoString (
     VOID
 )
 {
-    return g_SupportsAnsi ? "\x1b[1;31m no" : " no (insecure)";
+    return g_SupportsAnsi ? "\x1b[1;31m no" : " no (undesirable)";
 }
 
 PCHAR
@@ -146,7 +146,7 @@ GetGreenYesString (
     VOID
     )
 {
-    return g_SupportsAnsi ? "\x1b[1;32myes" : "yes (secured)";
+    return g_SupportsAnsi ? "\x1b[1;32myes" : "yes (desirable)";
 }
 
 PCHAR
@@ -155,7 +155,7 @@ GetRedYesString (
     VOID
 )
 {
-    return g_SupportsAnsi ? "\x1b[1;31myes" : "yes (insecure)";
+    return g_SupportsAnsi ? "\x1b[1;31myes" : "yes (undesirable)";
 }
 
 PCHAR
@@ -164,7 +164,7 @@ GetGreenNoString (
     VOID
 )
 {
-    return g_SupportsAnsi ? "\x1b[1;32m no" : " no (secured)";
+    return g_SupportsAnsi ? "\x1b[1;32m no" : " no (desirable)";
 }
 
 PCHAR
