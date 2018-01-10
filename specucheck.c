@@ -70,7 +70,7 @@ BOOL g_SupportsAnsi;
 // Welcome Banner
 //
 const WCHAR WelcomeString[] =
-    L"SpecuCheck v1.0.4   --   Copyright(c) 2018 Alex Ionescu\n"
+    L"SpecuCheck v1.0.5   --   Copyright(c) 2018 Alex Ionescu\n"
     L"https://ionescu007.github.io/SpecuCheck/  --  @aionescu\n"
     L"-------------------------------------------------------\n\n";
 
@@ -185,23 +185,36 @@ SpcMain (
     SPC_ERROR_CODES errorCode;
     WCHAR stateBuffer[1024];
     INT charsWritten;
+	BOOL boolRedirected;
 
-    //
+	// are we redirected?
+	boolRedirected = FALSE;
+	if (IsConsoleRedirected()) {
+		boolRedirected = TRUE;
+	}
+	
+	//
     // Open the output handle -- also not much we can do if this fails
     //
-    hStdOut = CreateFile(L"CONOUT$",
-                         GENERIC_WRITE,
-                         0,
-                         NULL,
-                         OPEN_EXISTING,
-                         0,
-                         NULL);
-    if (hStdOut == INVALID_HANDLE_VALUE)
-    {
-        hStdOut = INVALID_HANDLE_VALUE;
-        errorCode = SpcFailedToOpenStandardOut;
-        goto Exit;
-    }
+	if (boolRedirected) {
+		hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
+	else {
+		hStdOut = CreateFile(L"CONOUT$",
+			GENERIC_WRITE,
+			0,
+			NULL,
+			OPEN_EXISTING,
+			0,
+			NULL);
+	}
+
+	if (hStdOut == INVALID_HANDLE_VALUE)
+	{
+		hStdOut = INVALID_HANDLE_VALUE;
+		errorCode = SpcFailedToOpenStandardOut;
+		goto Exit;
+	}
 
     //
     // Enable ANSI on Windows 10 if supported
@@ -213,7 +226,12 @@ SpcMain (
     //
     // We now have display capabilities -- say hello!
     //
-    WriteConsole(hStdOut, WelcomeString, ARRAYSIZE(WelcomeString) - 1, NULL, NULL);
+   	if (boolRedirected) {
+		WriteFile(hStdOut, WelcomeString, lstrlen(WelcomeString) * sizeof(WCHAR), NULL, 0);
+	}
+	else {
+		WriteConsole(hStdOut, WelcomeString, ARRAYSIZE(WelcomeString) - 1, NULL, NULL);
+	}
 
     //
     // Get the KVA Shadow Information
@@ -227,11 +245,16 @@ SpcMain (
         //
         // Print out an error if this failed
         //
-        WriteConsole(hStdOut,
-                     UnpatchedString,
-                     ARRAYSIZE(UnpatchedString) - 1,
-                     NULL,
-                     NULL);
+		if (boolRedirected) {
+			WriteFile(hStdOut, UnpatchedString, lstrlen(UnpatchedString) * sizeof(WCHAR), NULL, 0);
+		}
+		else {
+			WriteConsole(hStdOut,
+				UnpatchedString,
+				ARRAYSIZE(UnpatchedString) - 1,
+				NULL,
+				NULL);
+		}
         errorCode = SpcFailedToQueryKvaShadowing;
         goto Exit;
     }
@@ -269,7 +292,13 @@ SpcMain (
                             kvaInfo.KvaShadowFlags.KvaShadowInvpcid ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+   
+	if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &charsWritten, 0);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // Get the Speculation Control Information
@@ -330,7 +359,13 @@ SpcMain (
                             specInfo.SpeculationControlFlags.SpecCmdEnumerated ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+
+	if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &charsWritten, 0);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // This is our happy path 
@@ -350,4 +385,29 @@ Exit:
     // Return the error code back to the caller, for debugging
     //
     return errorCode;
+}
+
+BOOL IsConsoleRedirected() {
+	INT* stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (stdout != INVALID_HANDLE_VALUE) {
+		UINT filetype = GetFileType(stdout);
+		if (!((filetype == FILE_TYPE_UNKNOWN) && (GetLastError() != ERROR_SUCCESS))) {
+			DWORD mode;
+			filetype &= ~(FILE_TYPE_REMOTE);
+			if (filetype == FILE_TYPE_CHAR) {
+				BOOL retval = GetConsoleMode(stdout,  &mode);
+				if ((retval == FALSE) && (GetLastError() == ERROR_INVALID_HANDLE)) {
+					return TRUE;
+				}
+				else {
+					return FALSE;
+				}
+			}
+			else {
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
 }
