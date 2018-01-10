@@ -185,6 +185,7 @@ SpcMain (
     SPC_ERROR_CODES errorCode;
     WCHAR stateBuffer[1024];
     INT charsWritten;
+	DWORD dwBytesWritten;
 	BOOL boolRedirected;
 
 	// are we redirected?
@@ -227,7 +228,7 @@ SpcMain (
     // We now have display capabilities -- say hello!
     //
    	if (boolRedirected) {
-		WriteFile(hStdOut, WelcomeString, lstrlen(WelcomeString) * sizeof(WCHAR), NULL, 0);
+		WriteFile(hStdOut, WelcomeString, lstrlen(WelcomeString) * sizeof(WCHAR), &dwBytesWritten, NULL);
 	}
 	else {
 		WriteConsole(hStdOut, WelcomeString, ARRAYSIZE(WelcomeString) - 1, NULL, NULL);
@@ -246,7 +247,7 @@ SpcMain (
         // Print out an error if this failed
         //
 		if (boolRedirected) {
-			WriteFile(hStdOut, UnpatchedString, lstrlen(UnpatchedString) * sizeof(WCHAR), NULL, 0);
+			WriteFile(hStdOut, UnpatchedString, lstrlen(UnpatchedString) * sizeof(WCHAR), &dwBytesWritten, NULL);
 		}
 		else {
 			WriteConsole(hStdOut,
@@ -294,7 +295,7 @@ SpcMain (
                             GetResetString());
    
 	if (boolRedirected) {
-		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &charsWritten, 0);
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
 	}
 	else {
 		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
@@ -312,13 +313,19 @@ SpcMain (
         //
         // Print out an error if this failed
         //
-        WriteConsole(hStdOut,
-                     UnpatchedString,
-                     ARRAYSIZE(UnpatchedString) - 1,
-                     NULL,
-                     NULL);
-        errorCode = SpcFailedToQuerySpeculationControl;
-        goto Exit;
+		if (boolRedirected) {
+			WriteFile(hStdOut, UnpatchedString, lstrlen(UnpatchedString) * sizeof(WCHAR), &dwBytesWritten, NULL);
+		}
+		else {
+			WriteConsole(hStdOut,
+				UnpatchedString,
+				ARRAYSIZE(UnpatchedString) - 1,
+				NULL,
+				NULL);
+		}
+		errorCode = SpcFailedToQuerySpeculationControl;
+		goto Exit;
+		
     }
     else if (!NT_SUCCESS(status))
     {
@@ -361,7 +368,7 @@ SpcMain (
                             GetResetString());
 
 	if (boolRedirected) {
-		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &charsWritten, 0);
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
 	}
 	else {
 		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
