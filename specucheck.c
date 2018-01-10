@@ -27,10 +27,13 @@ Environment:
 #define WIN32_NO_STATUS
 #include <windows.h>
 #include <winternl.h>
+#include <wchar.h>
 
 //
 // Internal structures and information classes
 //
+#pragma warning(push)
+#pragma warning(disable:4214)
 #define SystemSpeculationControlInformation (SYSTEM_INFORMATION_CLASS)201
 typedef struct _SYSTEM_SPECULATION_CONTROL_INFORMATION
 {
@@ -60,6 +63,7 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
         ULONG Reserved : 28;
     } KvaShadowFlags;
 } SYSTEM_KERNEL_VA_SHADOW_INFORMATION, *PSYSTEM_KERNEL_VA_SHADOW_INFORMATION;
+#pragma warning(pop)
 
 //
 // ANSI Check
@@ -70,7 +74,7 @@ BOOL g_SupportsAnsi;
 // Welcome Banner
 //
 const WCHAR WelcomeString[] =
-    L"SpecuCheck v1.0.4   --   Copyright(c) 2018 Alex Ionescu\n"
+    L"SpecuCheck v1.0.5   --   Copyright(c) 2018 Alex Ionescu\n"
     L"https://ionescu007.github.io/SpecuCheck/  --  @aionescu\n"
     L"-------------------------------------------------------\n\n";
 
@@ -179,7 +183,6 @@ SpcMain (
 {
     HANDLE hStdOut;
     NTSTATUS status;
-    BOOL boolResult;
     SYSTEM_KERNEL_VA_SHADOW_INFORMATION kvaInfo;
     SYSTEM_SPECULATION_CONTROL_INFORMATION specInfo;
     SPC_ERROR_CODES errorCode;
@@ -261,7 +264,7 @@ SpcMain (
                                GetGreenYesString() : GetRedNoString(),
                             GetResetString(),
                             kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ?
-                                GetGreenYesString() : GetRedNoString(),
+                                GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
                             kvaInfo.KvaShadowFlags.KvaShadowPcid ?
                                 GetGreenYesString() : GetRedNoString(),
