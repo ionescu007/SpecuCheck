@@ -176,6 +176,9 @@ GetCyanString (
     return g_SupportsAnsi ? "\x1b[1;36m" : "";
 }
 
+BOOL
+IsConsoleRedirected(void);
+
 INT
 SpcMain (
     VOID
@@ -298,7 +301,7 @@ SpcMain (
                             GetResetString());
    
 	if (boolRedirected) {
-		WriteFile(hStdOut, stateBuffer, ARRAYSIZE(stateBuffer), &dwBytesWritten, NULL);
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
 	}
 	else {
 		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
@@ -398,14 +401,14 @@ Exit:
 }
 
 BOOL IsConsoleRedirected() {
-	INT* stdout = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (stdout != INVALID_HANDLE_VALUE) {
-		UINT filetype = GetFileType(stdout);
+	INT* stdouthndl = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (stdouthndl != INVALID_HANDLE_VALUE) {
+		UINT filetype = GetFileType(stdouthndl);
 		if (!((filetype == FILE_TYPE_UNKNOWN) && (GetLastError() != ERROR_SUCCESS))) {
 			DWORD mode;
 			filetype &= ~(FILE_TYPE_REMOTE);
 			if (filetype == FILE_TYPE_CHAR) {
-				BOOL retval = GetConsoleMode(stdout,  &mode);
+				BOOL retval = GetConsoleMode(stdouthndl,  &mode);
 				if ((retval == FALSE) && (GetLastError() == ERROR_INVALID_HANDLE)) {
 					return TRUE;
 				}
