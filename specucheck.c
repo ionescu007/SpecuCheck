@@ -295,7 +295,7 @@ SpcMain (
                             GetResetString());
    
 	if (boolRedirected) {
-		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+		WriteFile(hStdOut, stateBuffer, ARRAYSIZE(stateBuffer), &dwBytesWritten, NULL);
 	}
 	else {
 		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
