@@ -27,10 +27,13 @@ Environment:
 #define WIN32_NO_STATUS
 #include <windows.h>
 #include <winternl.h>
+#include <wchar.h>
 
 //
 // Internal structures and information classes
 //
+#pragma warning(push)
+#pragma warning(disable:4214)
 #define SystemSpeculationControlInformation (SYSTEM_INFORMATION_CLASS)201
 typedef struct _SYSTEM_SPECULATION_CONTROL_INFORMATION
 {
@@ -60,6 +63,7 @@ typedef struct _SYSTEM_KERNEL_VA_SHADOW_INFORMATION
         ULONG Reserved : 28;
     } KvaShadowFlags;
 } SYSTEM_KERNEL_VA_SHADOW_INFORMATION, *PSYSTEM_KERNEL_VA_SHADOW_INFORMATION;
+#pragma warning(pop)
 
 //
 // ANSI Check
@@ -133,7 +137,7 @@ GetRedNoString (
     VOID
 )
 {
-    return g_SupportsAnsi ? "\x1b[1;31m no" : " no";
+    return g_SupportsAnsi ? "\x1b[1;31m no" : " no (undesirable)";
 }
 
 PCHAR
@@ -142,7 +146,7 @@ GetGreenYesString (
     VOID
     )
 {
-    return g_SupportsAnsi ? "\x1b[1;32myes" : "yes";
+    return g_SupportsAnsi ? "\x1b[1;32myes" : "yes (desirable)";
 }
 
 PCHAR
@@ -151,7 +155,7 @@ GetRedYesString (
     VOID
 )
 {
-    return g_SupportsAnsi ? "\x1b[1;31myes" : "yes";
+    return g_SupportsAnsi ? "\x1b[1;31myes" : "yes (undesirable)";
 }
 
 PCHAR
@@ -160,7 +164,7 @@ GetGreenNoString (
     VOID
 )
 {
-    return g_SupportsAnsi ? "\x1b[1;32m no" : " no";
+    return g_SupportsAnsi ? "\x1b[1;32m no" : " no (desirable)";
 }
 
 PCHAR
@@ -179,7 +183,6 @@ SpcMain (
 {
     HANDLE hStdOut;
     NTSTATUS status;
-    BOOL boolResult;
     SYSTEM_KERNEL_VA_SHADOW_INFORMATION kvaInfo;
     SYSTEM_SPECULATION_CONTROL_INFORMATION specInfo;
     SPC_ERROR_CODES errorCode;
@@ -285,7 +288,7 @@ SpcMain (
                                GetGreenYesString() : GetRedNoString(),
                             GetResetString(),
                             kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ?
-                                GetGreenYesString() : GetRedNoString(),
+                                GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
                             kvaInfo.KvaShadowFlags.KvaShadowPcid ?
                                 GetGreenYesString() : GetRedNoString(),
