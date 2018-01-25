@@ -93,7 +93,7 @@ const WCHAR g_KvaStatusString[] =
     L"-------------------------------------------------------\n"
     L"[-] Kernel VA Shadowing Enabled:                    %s%s\n"
     L" ├───> with User Pages Marked Global:               %s%s\n"
-    L" └───> with PCID Flushing Optimization (INVPCID):   %s%s\n\n";
+    L" └───> with PCID Flushing Optimization:             %s%s\n\n";
 
 //
 // Speculation Control Status String
@@ -266,10 +266,7 @@ SpcMain (
                             kvaInfo.KvaShadowFlags.KvaShadowUserGlobal ?
                                 GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
-                            kvaInfo.KvaShadowFlags.KvaShadowPcid ?
-                                GetGreenYesString() : GetRedNoString(),
-                            GetResetString(),
-                            kvaInfo.KvaShadowFlags.KvaShadowInvpcid ?
+                            (kvaInfo.KvaShadowFlags.KvaShadowPcid && kvaInfo.KvaShadowFlags.KvaShadowInvpcid) ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
