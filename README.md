@@ -6,7 +6,7 @@ An [official](https://support.microsoft.com/en-us/help/4073119/windows-client-gu
 
 ## Screenshots
 
-![Screenshot](SpecuCheck.png)
+![Screenshot](SpecuCheck2.png)
 
 ## Introduction
 
