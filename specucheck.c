@@ -148,8 +148,8 @@ const WCHAR g_SpecControlStatusString2[] =
     L"[-] SSBD Mitigations Enabled:                       %s%s\n"
     L" ├───> Disabled due to lack of OS Support:          %s%s\n"
     L" ├───> Disabled due to lack of Microcode Update:    %s%s\n"
-    L" ├───> Disabled system-wide due to System Policy:   %s%s\n"
-    L" └───> Disabled in kernel due to System Policy:     %s%s\n";
+    L" ├───> Enabled for system-wide transitions:         %s%s\n"
+    L" └───> Enabled for kernel-mode transitions only:    %s%s\n";
 
 //
 // Error codes used for clarity
@@ -443,10 +443,10 @@ SpcMain (
                                 GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
                             specInfo.SpeculationControlFlags.SpeculativeStoreBypassDisabledSystemWide ?
-                                GetRedYesString() : GetGreenNoString(),
+                                GetGreenYesString() : GetRedNoString(),
                             GetResetString(),
                             specInfo.SpeculationControlFlags.SpeculativeStoreBypassDisabledKernel ?
-                                GetRedYesString() : GetGreenNoString(),
+                                GetGreenYesString() : GetRedNoString(),
                             GetResetString());
     WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
 
