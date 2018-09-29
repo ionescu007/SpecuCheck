@@ -52,7 +52,7 @@ For additional information on the appropriate and required Windows patches, plea
 
 SpecuCheck relies on undocumented system calls and information classes which are subject to change. Additionally, SpecuCheck only returns the information that the Windows Kernel is storing about the state of the mitigations and hardware features -- based on policy settings (registry, boot parameters) or other compatibility flags, the Windows Kernel's state may not match the true hardware state. The goal of this tool is to give you a Windows-specific assessment, not a hardware assessment that is OS-agnostic.
 
-SpecuCheck is only a research tool and is not recommended for general use -- please use the Microsoft-approved PowerShell Module instead.
+SpecuCheck is only a research tool and is not recommended for general or commercial use -- please use the Microsoft-approved PowerShell Module instead.
 
 ## License
 
