@@ -244,6 +244,7 @@ SpcMain (
 	//
     // Open the output handle -- also not much we can do if this fails
     //
+	
 	if (boolRedirected) {
 		hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
@@ -256,7 +257,7 @@ SpcMain (
 			0,
 			NULL);
 	}
-
+	
 	if (hStdOut == INVALID_HANDLE_VALUE)
 	{
 		hStdOut = INVALID_HANDLE_VALUE;
@@ -380,7 +381,12 @@ SpcMain (
                              (kvaInfo.KvaShadowFlags.InvalidPteBit)) ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+    if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // Get the Speculation Control Information
@@ -493,7 +499,12 @@ SpcMain (
                             specInfo.SpeculationControlFlags.SpeculativeStoreBypassDisabledKernel ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // This is our happy path 
