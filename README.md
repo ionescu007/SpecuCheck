@@ -1,6 +1,6 @@
 # SpecuCheck
 
-SpecuCheck is a Windows utility for checking the state of the software mitigations against CVE-2017-5754 (Meltdown) and hardware mitigations against CVE-2017-5715 (Spectre). It uses two new information classes that were added to the NtQuerySystemInformation API call as part of the recent patches introduced in January 2018 and reports the data as seen by the Windows Kernel. 
+SpecuCheck is a Windows utility for checking the state of the software and hardware mitigations against CVE-2017-5754 (Meltdown), CVE-2017-5715 (Spectre v2), CVE-2018-3260 (Foreshadow), and CVE-2018-3639 (Spectre v4). It uses two new information classes that were added to the NtQuerySystemInformation API call as part of the recent patches introduced in January 2018 and reports the data as seen by the Windows Kernel. 
 
 An [official](https://support.microsoft.com/en-us/help/4073119/windows-client-guidance-for-it-pros-to-protect-against-speculative-exe) Microsoft Powershell Cmdlet Module now exists as well, which is the recommended and supported way to get this information.
 
@@ -17,6 +17,8 @@ On January 3rd 2018, Intel, AMD and ARM Holdings, as well as a number of OS Vend
 * Variant 3: rogue data cache load (CVE-2017-5754)
 
 Microsoft released patches for Windows 7 SP1 and higher later that same day. These patches, depending on architecture, OS version, boot settings and a number of hardware-related properties, apply a number of software and hardware mitigations against these issues. The enablement state of these mitigations, their availability, and configuration is stored by the Windows kernel in a number of global variables, and exposed to user-mode callers through an undocumented system call.
+
+Additionally, new side channel attacks were reported, such as Spectre Variant 4: speculative store bypass (CVE-2018-3639) and Foreshadow: L1 terminal fault (CVE-2018-3620) which were fixed in Windows 7 SP1 and higher with patches in August's Patch Tuesday.
 
 SpecuCheck takes advantage of this system call in order to confirm if a system has indeed been patched (non-patched systems will fail the call) and what the status of the mitigations are, which can be used to determine potential performance pitfalls.
 
@@ -44,13 +46,13 @@ If you would like to know more about my research or work, I invite you to check 
 
 You should also definitely read the incredibly informative [Project Zero Post](https://googleprojectzero.blogspot.com/2018/01/reading-privileged-memory-with-side.html).
 
-Finally, for additional information on the appropriate and required Windows patches, please read the [Microsoft Advisory](https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV180002).
+For additional information on the appropriate and required Windows patches, please read the [Microsoft Advisory](https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/ADV180002) and additional [Microsoft](https://support.microsoft.com/en-us/help/4457951/windows-server-guidance-to-protect-against-l1-terminal-fault) [Guidance](https://support.microsoft.com/en-us/help/4072698/windows-server-guidance-to-protect-against-the-speculative-execution).
 
 ## Caveats
 
 SpecuCheck relies on undocumented system calls and information classes which are subject to change. Additionally, SpecuCheck only returns the information that the Windows Kernel is storing about the state of the mitigations and hardware features -- based on policy settings (registry, boot parameters) or other compatibility flags, the Windows Kernel's state may not match the true hardware state. The goal of this tool is to give you a Windows-specific assessment, not a hardware assessment that is OS-agnostic.
 
-SpecuCheck is only a research tool and is not recommended for general use -- please use the Microsoft-approved PowerShell Module instead.
+SpecuCheck is only a research tool and is not recommended for general or commercial use -- please use the Microsoft-approved PowerShell Module instead.
 
 ## License
 
