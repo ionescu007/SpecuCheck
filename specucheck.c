@@ -271,7 +271,7 @@ SpcMain (
     g_SupportsAnsi = SetConsoleMode(hStdOut,
                                     ENABLE_PROCESSED_OUTPUT |
                                     ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    SetConsoleTitle(L"SpecuCheck v1.1.0");
+    SetConsoleTitle(L"SpecuCheck v1.1.1");
 
     //
     // We now have display capabilities -- say hello!
@@ -438,11 +438,8 @@ SpcMain (
                             specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ?
                                 GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
-                            specInfo.SpeculationControlFlags.BpbDisabledNoHardwareSupport ?
-                                GetRedYesString() : GetGreenNoString(),
-                            GetResetString(),
                             specInfo.SpeculationControlFlags.BpbDisabledKernelToUser ?
-                                GetGreenYesString() : GetRedNoString(),
+                                GetRedYesString() : GetGreenNoString(),
                             GetResetString(),
                             specInfo.SpeculationControlFlags.SpecCtrlRetpolineEnabled ?
                                 GetGreenYesString() : GetRedNoString(),
