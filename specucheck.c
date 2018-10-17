@@ -217,6 +217,9 @@ GetCyanString (
     return g_SupportsAnsi ? "\x1b[1;36m" : "";
 }
 
+BOOL
+IsConsoleRedirected(void);
+
 INT
 SpcMain (
     VOID
@@ -229,23 +232,38 @@ SpcMain (
     SPC_ERROR_CODES errorCode;
     WCHAR stateBuffer[2048];
     INT charsWritten;
+	DWORD dwBytesWritten;
+	BOOL boolRedirected;
 
-    //
+	// are we redirected?
+	boolRedirected = FALSE;
+	if (IsConsoleRedirected()) {
+		boolRedirected = TRUE;
+	}
+	
+	//
     // Open the output handle -- also not much we can do if this fails
     //
-    hStdOut = CreateFile(L"CONOUT$",
-                         GENERIC_WRITE,
-                         0,
-                         NULL,
-                         OPEN_EXISTING,
-                         0,
-                         NULL);
-    if (hStdOut == INVALID_HANDLE_VALUE)
-    {
-        hStdOut = INVALID_HANDLE_VALUE;
-        errorCode = SpcFailedToOpenStandardOut;
-        goto Exit;
-    }
+	
+	if (boolRedirected) {
+		hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	}
+	else {
+		hStdOut = CreateFile(L"CONOUT$",
+			GENERIC_WRITE,
+			0,
+			NULL,
+			OPEN_EXISTING,
+			0,
+			NULL);
+	}
+	
+	if (hStdOut == INVALID_HANDLE_VALUE)
+	{
+		hStdOut = INVALID_HANDLE_VALUE;
+		errorCode = SpcFailedToOpenStandardOut;
+		goto Exit;
+	}
 
     //
     // Enable ANSI on Windows 10 if supported
@@ -258,7 +276,12 @@ SpcMain (
     //
     // We now have display capabilities -- say hello!
     //
-    WriteConsole(hStdOut, WelcomeString, ARRAYSIZE(WelcomeString) - 1, NULL, NULL);
+   	if (boolRedirected) {
+		WriteFile(hStdOut, WelcomeString, lstrlen(WelcomeString) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, WelcomeString, ARRAYSIZE(WelcomeString) - 1, NULL, NULL);
+	}
 
     //
     // Get the KVA Shadow Information
@@ -272,11 +295,16 @@ SpcMain (
         //
         // Print out an error if this failed
         //
-        WriteConsole(hStdOut,
-                     UnpatchedString,
-                     ARRAYSIZE(UnpatchedString) - 1,
-                     NULL,
-                     NULL);
+		if (boolRedirected) {
+			WriteFile(hStdOut, UnpatchedString, lstrlen(UnpatchedString) * sizeof(WCHAR), &dwBytesWritten, NULL);
+		}
+		else {
+			WriteConsole(hStdOut,
+				UnpatchedString,
+				ARRAYSIZE(UnpatchedString) - 1,
+				NULL,
+				NULL);
+		}
         errorCode = SpcFailedToQueryKvaShadowing;
         goto Exit;
     }
@@ -320,7 +348,13 @@ SpcMain (
                             kvaInfo.KvaShadowFlags.KvaShadowInvpcid ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+   
+	if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // Print status of L1TF Features
@@ -347,7 +381,12 @@ SpcMain (
                              (kvaInfo.KvaShadowFlags.InvalidPteBit)) ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+    if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // Get the Speculation Control Information
@@ -361,13 +400,19 @@ SpcMain (
         //
         // Print out an error if this failed
         //
-        WriteConsole(hStdOut,
-                     UnpatchedString,
-                     ARRAYSIZE(UnpatchedString) - 1,
-                     NULL,
-                     NULL);
-        errorCode = SpcFailedToQuerySpeculationControl;
-        goto Exit;
+		if (boolRedirected) {
+			WriteFile(hStdOut, UnpatchedString, lstrlen(UnpatchedString) * sizeof(WCHAR), &dwBytesWritten, NULL);
+		}
+		else {
+			WriteConsole(hStdOut,
+				UnpatchedString,
+				ARRAYSIZE(UnpatchedString) - 1,
+				NULL,
+				NULL);
+		}
+		errorCode = SpcFailedToQuerySpeculationControl;
+		goto Exit;
+		
     }
     else if (!NT_SUCCESS(status))
     {
@@ -417,7 +462,13 @@ SpcMain (
                             specInfo.SpeculationControlFlags.SpecCmdEnumerated ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+
+	if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // Print status of Speculation Control SSBD Features
@@ -445,7 +496,12 @@ SpcMain (
                             specInfo.SpeculationControlFlags.SpeculativeStoreBypassDisabledKernel ?
                                 GetGreenYesString() : GetRedNoString(),
                             GetResetString());
-    WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	if (boolRedirected) {
+		WriteFile(hStdOut, stateBuffer, lstrlen(stateBuffer) * sizeof(WCHAR), &dwBytesWritten, NULL);
+	}
+	else {
+		WriteConsole(hStdOut, stateBuffer, charsWritten, NULL, NULL);
+	}
 
     //
     // This is our happy path 
@@ -465,4 +521,29 @@ Exit:
     // Return the error code back to the caller, for debugging
     //
     return errorCode;
+}
+
+BOOL IsConsoleRedirected() {
+	INT* stdouthndl = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (stdouthndl != INVALID_HANDLE_VALUE) {
+		UINT filetype = GetFileType(stdouthndl);
+		if (!((filetype == FILE_TYPE_UNKNOWN) && (GetLastError() != ERROR_SUCCESS))) {
+			DWORD mode;
+			filetype &= ~(FILE_TYPE_REMOTE);
+			if (filetype == FILE_TYPE_CHAR) {
+				BOOL retval = GetConsoleMode(stdouthndl,  &mode);
+				if ((retval == FALSE) && (GetLastError() == ERROR_INVALID_HANDLE)) {
+					return TRUE;
+				}
+				else {
+					return FALSE;
+				}
+			}
+			else {
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
 }
