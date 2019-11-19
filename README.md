@@ -1,6 +1,6 @@
 # SpecuCheck
 
-SpecuCheck is a Windows utility for checking the state of the software and hardware mitigations against CVE-2017-5754 (Meltdown), CVE-2017-5715 (Spectre v2), CVE-2018-3260 (Foreshadow), and CVE-2018-3639 (Spectre v4). It uses two new information classes that were added to the NtQuerySystemInformation API call as part of the recent patches introduced in January 2018 and reports the data as seen by the Windows Kernel. 
+SpecuCheck is a Windows utility for checking the state of the software and hardware mitigations against CVE-2017-5754 (Meltdown), CVE-2017-5715 (Spectre v2), CVE-2018-3620 (Foreshadow), and CVE-2018-3639 (Spectre v4 / SPECTRE-NG). It uses two new information classes that were added to the NtQuerySystemInformation API call as part of the recent patches introduced in January 2018 and reports the data as seen by the Windows Kernel. 
 
 An [official](https://support.microsoft.com/en-us/help/4073119/windows-client-guidance-for-it-pros-to-protect-against-speculative-exe) Microsoft Powershell Cmdlet Module now exists as well, which is the recommended and supported way to get this information.
 
